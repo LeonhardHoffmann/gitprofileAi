@@ -38,13 +38,11 @@ const HomePage = () => {
 
       const result = await res.json();
 
-      // ✅ CRITICAL FIX
       setAnalysis(result.analysis);
 
       const updated = { ...githubData, analysis: result.analysis };
       setData(updated);
       localStorage.setItem("githubData", JSON.stringify(updated));
-
     } catch (err) {
       console.error(err);
       setAnalysis({ error: "AI analysis failed. Try again later." });
@@ -72,7 +70,6 @@ const HomePage = () => {
       setData(result);
       localStorage.setItem("githubData", JSON.stringify(result));
 
-      // 🔥 Trigger AI
       fetchProfileAnalysis(result);
     } catch (err) {
       setError("User not found or GitHub API error");
@@ -85,9 +82,9 @@ const HomePage = () => {
   /* ⏳ GLOBAL LOADING */
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <div className="animate-spin rounded-full h-14 w-14 border-b-4 border-indigo-600"></div>
-        <p className="text-gray-400 font-medium">
+      <div className="flex flex-col items-center justify-center h-screen gap-4 bg-slate-950">
+        <div className="animate-spin rounded-full h-14 w-14 border-b-4 border-indigo-500"></div>
+        <p className="text-slate-400 font-medium">
           Fetching GitHub profile data…
         </p>
       </div>
@@ -95,17 +92,17 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
       <div className="max-w-6xl mx-auto px-4 pt-12">
 
         {/* ================= LANDING ================= */}
         {!data && (
           <div className="flex flex-col items-center justify-center h-[65vh] text-center">
-            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-indigo-300 mb-4">
               GitProfile AI
             </h1>
 
-            <p className="text-gray-500 mb-10 max-w-xl text-lg">
+            <p className="text-slate-400 mb-10 max-w-xl text-lg">
               Recruiter-style AI analysis of your GitHub profile.
               Find out if your profile is actually hire-ready.
             </p>
@@ -115,7 +112,7 @@ const HomePage = () => {
             </div>
 
             {error && (
-              <p className="mt-6 text-red-600 bg-red-100 px-4 py-2 rounded-xl">
+              <p className="mt-6 text-red-300 bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/30">
                 {error}
               </p>
             )}
@@ -127,22 +124,23 @@ const HomePage = () => {
           <div className="space-y-12 animate-in fade-in duration-700">
 
             {/* 👤 PROFILE CARD */}
-            <section className="bg-white rounded-3xl p-8 border flex flex-col md:flex-row gap-8 items-center">
+            <section className="bg-slate-900/80 border border-slate-700 rounded-3xl p-8 flex flex-col md:flex-row gap-8 items-center">
               <img
                 src={data.profile.avatarUrl}
                 alt="avatar"
-                className="w-36 h-36 rounded-3xl shadow border"
+                className="w-36 h-36 rounded-3xl shadow border border-slate-700"
               />
 
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl font-black text-gray-900">
+                <h1 className="text-3xl font-black text-slate-100">
                   {data.profile.name || data.profile.username}
                 </h1>
-                <p className="text-gray-500 mb-3">
+
+                <p className="text-slate-400 mb-3">
                   @{data.profile.username}
                 </p>
 
-                <p className="text-gray-600 max-w-2xl mb-6">
+                <p className="text-slate-300 max-w-2xl mb-6">
                   {data.profile.bio || "No bio provided"}
                 </p>
 
@@ -164,13 +162,13 @@ const HomePage = () => {
 
             {/* 🤖 AI ANALYSIS */}
             {aiLoading ? (
-              <section className="bg-white rounded-3xl p-10 border text-center">
-                <p className="text-xl font-bold mb-2">
+              <section className="bg-slate-900/80 border border-slate-700 rounded-3xl p-10 text-center">
+                <p className="text-xl font-bold mb-2 text-indigo-300">
                   AI is reviewing this profile
                 </p>
-                <p className="text-gray-500">
-                  Evaluating consistency, project quality, open-source impact,
-                  and hiring readiness…
+                <p className="text-slate-400">
+                  Evaluating consistency, project quality,
+                  open-source impact, and hiring readiness…
                 </p>
               </section>
             ) : (
@@ -185,7 +183,7 @@ const HomePage = () => {
                   setData(null);
                   setAnalysis(null);
                 }}
-                className="bg-gray-900 text-white px-8 py-3 rounded-full font-bold hover:bg-black transition"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold transition"
               >
                 Analyze Another GitHub Profile
               </button>
@@ -201,18 +199,18 @@ const HomePage = () => {
 /* ---------- UI PARTS ---------- */
 
 const MiniStat = ({ label, value }) => (
-  <div className="bg-gray-100 px-4 py-3 rounded-xl text-center min-w-[90px]">
-    <p className="text-xl font-black text-gray-900">{value}</p>
-    <p className="text-sm text-gray-500">{label}</p>
+  <div className="bg-slate-800/80 border border-slate-600 px-4 py-3 rounded-xl text-center min-w-[90px]">
+    <p className="text-xl font-black text-slate-100">{value}</p>
+    <p className="text-sm text-slate-400">{label}</p>
   </div>
 );
 
 const StatCard = ({ title, value, color }) => {
   const colors = {
-    blue: "bg-blue-50 text-blue-700 border-blue-100",
-    green: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    purple: "bg-purple-50 text-purple-700 border-purple-100",
-    orange: "bg-orange-50 text-orange-700 border-orange-100",
+    blue: "bg-blue-500/10 text-blue-300 border-blue-400/30",
+    green: "bg-emerald-500/10 text-emerald-300 border-emerald-400/30",
+    purple: "bg-indigo-500/10 text-indigo-300 border-indigo-400/30",
+    orange: "bg-orange-500/10 text-orange-300 border-orange-400/30",
   };
 
   return (

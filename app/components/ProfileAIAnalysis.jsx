@@ -34,54 +34,54 @@ const LABELS = {
 const ProfileAIAnalysis = ({ analysis }) => {
   if (!analysis) return null;
 
-  const { verdict, scores, missing, plan, recruiter } = analysis;
+  const { verdict, scores, missing, plan } = analysis;
   if (!verdict || !scores) return null;
 
   const entries = Object.entries(scores);
   const weakest = entries.reduce((a, b) => (a[1] < b[1] ? a : b));
 
-  const resumeScore = Math.round(
-    (entries.reduce((s, [, v]) => s + v, 0) / 60) * 100
-  );
-
-  const resumeVerdict =
-    resumeScore >= 70 ? "YES" : resumeScore >= 50 ? "MAYBE" : "NO";
-
   return (
     <div className="space-y-12">
 
       {/* ================= HERO VERDICT ================= */}
-      <section className="bg-gradient-to-br from-indigo-600 to-indigo-500 text-white rounded-3xl p-10">
-        <span className="inline-block bg-black/20 px-4 py-1 rounded-full text-sm font-bold">
+      <section className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600 text-slate-100 rounded-3xl p-10">
+        <span className="inline-block bg-indigo-500/20 text-indigo-300 px-4 py-1 rounded-full text-sm font-bold">
           Level: {verdict.level}
         </span>
-        <p className="mt-6 text-lg font-medium leading-relaxed max-w-3xl">
+
+        <p className="mt-6 text-lg font-medium leading-relaxed max-w-3xl text-slate-200">
           {verdict.summary}
         </p>
       </section>
 
       {/* ================= SIGNAL SCORES ================= */}
       <section>
-        <h2 className="text-xl font-black mb-4">Profile Health Signals</h2>
+        <h2 className="text-xl mb-4 font-bold text-indigo-300">
+          Profile Health Signals
+        </h2>
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {entries.map(([k, v]) => {
             const isWeakest = k === weakest[0];
+
             return (
               <div
                 key={k}
                 className={`p-5 rounded-2xl border text-center transition ${
                   isWeakest
-                    ? "bg-red-50 border-red-400 text-red-700"
-                    : "bg-white"
+                    ? "bg-red-500/10 border-red-400 text-red-300"
+                    : "bg-slate-800/80 border-slate-600 text-slate-100"
                 }`}
               >
-                <p className="text-xs uppercase tracking-wide opacity-70">
+                <p className="text-xs uppercase tracking-wide text-slate-400">
                   {LABELS[k]}
                 </p>
+
                 <p className="text-3xl font-black mt-1">{v}/10</p>
+
                 {isWeakest && (
-                  <p className="mt-2 text-xs font-semibold">
-                    ⚠ Primary Weakness
+                  <p className="mt-2 text-xs font-semibold text-red-300">
+                    Primary Weakness
                   </p>
                 )}
               </div>
@@ -91,8 +91,11 @@ const ProfileAIAnalysis = ({ analysis }) => {
       </section>
 
       {/* ================= RADAR ================= */}
-      <section className="bg-white p-8 rounded-3xl border">
-        <h2 className="text-xl font-black mb-6">Skill Distribution Overview</h2>
+      <section className="p-8 rounded-3xl border bg-slate-900/90 text-slate-100 border-slate-700">
+        <h2 className="text-xl font-black mb-6 text-indigo-300">
+          Skill Distribution Overview
+        </h2>
+
         <Radar
           data={{
             labels: entries.map(([k]) => LABELS[k]),
@@ -100,9 +103,12 @@ const ProfileAIAnalysis = ({ analysis }) => {
               {
                 data: entries.map(([, v]) => v),
                 fill: true,
-                backgroundColor: "rgba(99,102,241,0.25)",
-                borderColor: "#6366f1",
-                pointBackgroundColor: "#6366f1",
+                backgroundColor: "rgba(129,140,248,0.25)",
+                borderColor: "#818cf8",
+                pointBackgroundColor: "#818cf8",
+                pointBorderColor: "#020617",
+                pointHoverBackgroundColor: "#020617",
+                pointHoverBorderColor: "#818cf8",
               },
             ],
           }}
@@ -111,12 +117,32 @@ const ProfileAIAnalysis = ({ analysis }) => {
               r: {
                 min: 0,
                 max: 10,
-                ticks: { stepSize: 2 },
+                ticks: {
+                  stepSize: 2,
+                  color: "#c7d2fe",
+                  backdropColor: "transparent",
+                },
+                grid: {
+                  color: "rgba(148,163,184,0.25)",
+                },
+                angleLines: {
+                  color: "rgba(148,163,184,0.35)",
+                },
+                pointLabels: {
+                  color: "#e0e7ff",
+                  font: { size: 12, weight: "600" },
+                },
               },
             },
             plugins: {
               legend: { display: false },
-              tooltip: { enabled: true },
+              tooltip: {
+                backgroundColor: "#020617",
+                titleColor: "#e0e7ff",
+                bodyColor: "#c7d2fe",
+                borderColor: "#6366f1",
+                borderWidth: 1,
+              },
             },
           }}
         />
@@ -131,37 +157,19 @@ const ProfileAIAnalysis = ({ analysis }) => {
       <Section title="30-Day Improvement Plan">
         <ReactMarkdown>{plan}</ReactMarkdown>
       </Section>
-
-      {/* ================= RECRUITER DECISION ================= */}
-      <section
-        className={`rounded-3xl p-10 text-white ${
-          resumeVerdict === "YES"
-            ? "bg-green-600"
-            : resumeVerdict === "MAYBE"
-            ? "bg-yellow-500"
-            : "bg-red-600"
-        }`}
-      >
-        <h3 className="font-black uppercase tracking-wide">
-          Recruiter Hiring Signal
-        </h3>
-        <p className="text-6xl font-black mt-4">{resumeScore}/100</p>
-        <p className="mt-2 text-lg font-semibold">
-          Shortlist Decision: {resumeVerdict}
-        </p>
-
-        <div className="mt-6 prose prose-invert max-w-none">
-          <ReactMarkdown>{recruiter}</ReactMarkdown>
-        </div>
-      </section>
     </div>
   );
 };
 
 const Section = ({ title, children }) => (
-  <section className="bg-white rounded-3xl p-8 border">
-    <h2 className="text-xl font-black mb-4">{title}</h2>
-    <div className="prose max-w-none">{children}</div>
+  <section className="rounded-3xl p-8 border bg-slate-800/80 border-slate-600 text-slate-100">
+    <h2 className="text-xl font-black mb-4 text-indigo-300">
+      {title}
+    </h2>
+
+    <div className="prose prose-invert max-w-none text-slate-200">
+      {children}
+    </div>
   </section>
 );
 
