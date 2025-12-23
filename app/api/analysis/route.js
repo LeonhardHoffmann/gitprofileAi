@@ -5,6 +5,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function getSection(text, title) {
+  const regex = new RegExp(`## ${title}[\\s\\S]*?(?=##|$)`, "i");
+  const match = text.match(regex);
+  return match
+    ? match[0].replace(`## ${title}`, "").trim()
+    : "";
+}
+
 export async function POST(req) {
   try {
     const { repoDetails } = await req.json();
@@ -19,12 +27,8 @@ export async function POST(req) {
     const prompt = `
 You are a brutally honest Senior Open Source Maintainer and Career Mentor.
 
-Analyze this GitHub repository for:
-- Open Source readiness
-- Resume value
-- Production quality
+Analyze this GitHub repository:
 
-Repository:
 Name: ${repoDetails.name}
 Description: ${repoDetails.description || "No description"}
 Tech Stack: ${repoDetails.language || "Unknown"}
@@ -33,13 +37,12 @@ Forks: ${repoDetails.forks || 0}
 
 RULES:
 - No sugar coating
-- Use simple English + Hinglish ("ye missing hai", "ye karo")
-- Be practical
+- Simple English + Hinglish
+- Practical advice only
 
 Return MARKDOWN in this EXACT structure:
 
 ## Overall Verdict
-(Strong / Average / Weak + one line)
 
 ## Health Scores (0–10)
 Maintainability:
@@ -49,14 +52,10 @@ Scalability:
 Code Quality:
 
 ## What Is MISSING
-(bullet list)
 
 ## 48-Hour Fix Plan
-Day 1:
-Day 2:
 
 ## Career Impact Advice
-(Resume + recruiter POV)
 `;
 
     const completion = await openai.chat.completions.create({
@@ -67,8 +66,9 @@ Day 2:
 
     const analysis = completion.choices[0].message.content;
 
-    // 🔥 SCORE EXTRACTION (SAFE)
-    const nums = analysis.match(/\b([0-9]|10)\b/g)?.map(Number) || [];
+    // 🔢 Extract numbers safely
+    const nums =
+      analysis.match(/\b(10|[0-9])\b/g)?.map(Number) || [];
 
     const scores = {
       maintainability: nums[0] ?? 0,
@@ -78,13 +78,20 @@ Day 2:
       codeQuality: nums[4] ?? 0,
     };
 
+    const sections = {
+      verdict: getSection(analysis, "Overall Verdict"),
+      missing: getSection(analysis, "What Is MISSING"),
+      fixPlan: getSection(analysis, "48-Hour Fix Plan"),
+      career: getSection(analysis, "Career Impact Advice"),
+    };
+
     return NextResponse.json({
-      analysis,
       scores,
+      sections,
+      rawAnalysis: analysis,
     });
   } catch (error) {
-    console.error("OpenAI Error:", error);
-
+    console.error("AI ERROR:", error);
     return NextResponse.json(
       {
         error: "AI analysis failed",

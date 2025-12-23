@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -27,8 +28,8 @@ const RepoDetailPage = () => {
   const router = useRouter();
 
   const [repoData, setRepoData] = useState(null);
-  const [analysis, setAnalysis] = useState("");
   const [scores, setScores] = useState(null);
+  const [sections, setSections] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +40,9 @@ const RepoDetailPage = () => {
     }
 
     const parsed = JSON.parse(saved);
-    const repo = parsed.repos.find((r) => r.name === params.repo);
+    const repo = parsed.repos.find(
+      (r) => r.name === params.repo
+    );
 
     if (!repo) {
       router.push("/projects");
@@ -52,30 +55,36 @@ const RepoDetailPage = () => {
     const cached = localStorage.getItem(cacheKey);
 
     if (cached) {
-      const parsedCache = JSON.parse(cached);
-      setAnalysis(parsedCache.analysis);
-      setScores(parsedCache.scores);
-      setLoading(false);
-    } else {
-      fetchAIAnalysis(repo, parsed.profile.username);
-    }
+  const data = JSON.parse(cached);
+
+  if (data?.scores && data?.sections?.verdict) {
+    setScores(data.scores);
+    setSections(data.sections);
+    setLoading(false);
+    return;
+  }
+}
+
+// fallback → force API
+fetchAI(repo);
+
   }, [params.repo]);
 
-  const fetchAIAnalysis = async (repo, username) => {
+  const fetchAI = async (repo) => {
     try {
       const res = await fetch("/api/analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repoDetails: repo, username }),
+        body: JSON.stringify({ repoDetails: repo }),
       });
 
-      const result = await res.json();
-      setAnalysis(result.analysis);
-      setScores(result.scores);
+      const data = await res.json();
+      setScores(data.scores);
+      setSections(data.sections);
 
       localStorage.setItem(
         `analysis-${repo.name}`,
-        JSON.stringify(result)
+        JSON.stringify(data)
       );
     } catch (err) {
       console.error(err);
@@ -84,10 +93,10 @@ const RepoDetailPage = () => {
     }
   };
 
-  if (loading) {
+  if (loading || !scores || !sections) {
     return (
       <div className="h-screen flex items-center justify-center bg-slate-950">
-        <p className="text-indigo-400 text-lg font-bold animate-pulse">
+        <p className="text-indigo-400 font-black animate-pulse">
           AI is auditing {params.repo}...
         </p>
       </div>
@@ -95,20 +104,22 @@ const RepoDetailPage = () => {
   }
 
   const scoreEntries = Object.entries(scores);
-  const weakest = scoreEntries.reduce((a, b) => (a[1] < b[1] ? a : b));
+  const weakest = scoreEntries.reduce((a, b) =>
+    a[1] < b[1] ? a : b
+  );
 
-  const resumeScore =
-    Math.round(
-      (scores.maintainability +
-        scores.security +
-        scores.documentation +
-        scores.scalability +
-        scores.codeQuality) *
-        2
-    ) || 0;
+  const resumeScore = Math.round(
+    (scores.maintainability +
+      scores.security +
+      scores.documentation +
+      scores.scalability +
+      scores.codeQuality) * 2
+  );
 
   const resumeVerdict =
-    resumeScore >= 70 ? "YES" : resumeScore >= 50 ? "MAYBE" : "NO";
+    resumeScore >= 70 ? "YES" :
+    resumeScore >= 50 ? "MAYBE" :
+    "NO";
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10">
@@ -118,35 +129,23 @@ const RepoDetailPage = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
           <button
             onClick={() => router.back()}
-            className="text-indigo-400 text-sm font-semibold mb-4"
+            className="text-indigo-400 font-semibold mb-4"
           >
             ← Back
           </button>
 
-          <h1 className="text-4xl font-black text-white mb-2">
+          <h1 className="text-4xl font-black text-white">
             {repoData.name}
           </h1>
 
-          <p className="text-slate-400 mb-4">
+          <p className="text-slate-400 mt-2">
             {repoData.description || "No description provided"}
           </p>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex gap-3 mt-4 flex-wrap">
             <Badge>{repoData.language}</Badge>
             <Badge>⭐ {repoData.stars}</Badge>
             <Badge>🍴 {repoData.forks}</Badge>
-
-            <span
-              className={`px-4 py-1.5 rounded-full text-sm font-black ${
-                resumeVerdict === "YES"
-                  ? "bg-green-600 text-white"
-                  : resumeVerdict === "MAYBE"
-                  ? "bg-yellow-500 text-black"
-                  : "bg-red-600 text-white"
-              }`}
-            >
-              Resume: {resumeVerdict}
-            </span>
           </div>
         </div>
 
@@ -155,7 +154,7 @@ const RepoDetailPage = () => {
           {scoreEntries.map(([key, value]) => (
             <div
               key={key}
-              className={`p-5 rounded-2xl border text-center font-bold ${
+              className={`p-5 rounded-2xl border text-center font-black ${
                 key === weakest[0]
                   ? "bg-red-900/40 border-red-500 text-red-300"
                   : "bg-slate-900 border-slate-800 text-slate-200"
@@ -166,17 +165,15 @@ const RepoDetailPage = () => {
               </div>
               <div className="text-3xl">{value}/10</div>
               {key === weakest[0] && (
-                <div className="text-xs mt-2 font-black">
-                  ⚠ Weakest Area
-                </div>
+                <div className="text-xs mt-2">⚠ Weakest</div>
               )}
             </div>
           ))}
         </div>
 
-        {/* RADAR CHART */}
+        {/* RADAR */}
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
-          <h2 className="text-xl font-bold text-white mb-6">
+          <h2 className="text-xl font-black text-white mb-6">
             Project Health Radar
           </h2>
 
@@ -185,15 +182,11 @@ const RepoDetailPage = () => {
               labels: scoreEntries.map(([k]) => k),
               datasets: [
                 {
-                  label: "Score",
                   data: scoreEntries.map(([_, v]) => v),
                   fill: true,
                   backgroundColor: "rgba(99,102,241,0.25)",
                   borderColor: "#818cf8",
                   borderWidth: 3,
-                  pointBackgroundColor: "#ffffff",
-                  pointBorderColor: "#6366f1",
-                  pointRadius: 5,
                 },
               ],
             }}
@@ -205,50 +198,50 @@ const RepoDetailPage = () => {
                   ticks: { color: "#c7d2fe" },
                   grid: { color: "rgba(255,255,255,0.12)" },
                   angleLines: { color: "rgba(255,255,255,0.18)" },
-                  pointLabels: {
-                    color: "#e0e7ff",
-                    font: { weight: "bold" },
-                  },
+                  pointLabels: { color: "#e0e7ff" },
                 },
               },
-              plugins: {
-                legend: {
-                  labels: { color: "#e0e7ff" },
-                },
-              },
+              plugins: { legend: { display: false } },
             }}
           />
         </div>
 
-        {/* AI REPORT */}
-        <div className="bg-white rounded-3xl p-10 text-black">
-          <div className="mb-6 text-xs font-black tracking-widest text-indigo-600">
-            AI AUDIT REPORT
-          </div>
+        {/* VERDICT */}
+        <Section title="Overall Verdict">
+          {sections.verdict || "No verdict generated"}
+        </Section>
 
-          <article className="prose prose-indigo max-w-none prose-headings:font-black prose-strong:text-indigo-600">
-            <ReactMarkdown>{analysis}</ReactMarkdown>
-          </article>
-        </div>
+        {/* MISSING */}
+        <Section title="What Is Missing">
+          <ReactMarkdown>
+            {sections.missing || ""}
+          </ReactMarkdown>
+        </Section>
 
-        {/* RESUME SCORE */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-8 text-center">
-          <h3 className="text-sm uppercase tracking-widest font-black mb-2">
-            Resume Readiness Score
-          </h3>
-          <div className="text-6xl font-black">{resumeScore}/100</div>
-          <p className="mt-3 font-semibold">
-            {resumeVerdict === "YES"
-              ? "Safe to add on resume"
-              : resumeVerdict === "MAYBE"
-              ? "Improve weak areas first"
-              : "Do NOT add this yet"}
-          </p>
-        </div>
+        {/* FIX PLAN */}
+        <Section title="48-Hour Fix Plan">
+          <ReactMarkdown>
+            {sections.fixPlan || ""}
+          </ReactMarkdown>
+        </Section>
+
+       
+
       </div>
     </div>
   );
 };
+
+const Section = ({ title, children }) => (
+  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+    <h2 className="text-xl font-black text-white mb-4">
+      {title}
+    </h2>
+    <div className="text-slate-300 prose prose-invert max-w-none">
+      {children}
+    </div>
+  </div>
+);
 
 const Badge = ({ children }) => (
   <span className="px-4 py-1.5 bg-slate-800 text-slate-200 rounded-full text-sm font-semibold">
