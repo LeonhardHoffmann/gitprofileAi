@@ -49,13 +49,13 @@ useEffect(() => {
   const languages = ["All", ...new Set(data.repos.map(r => r.language).filter(Boolean))];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-20">
+    <div className="min-h-screen pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
         
         {/* Header Section */}
         <div className="mb-10">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-            Projects <span className="text-slate-400 text-2xl font-medium ml-2">({data.repos.length})</span>
+          <h1 className="text-4xl font-extrabold text-white tracking-tight">
+            Projects <span className="text-slate-500 text-2xl font-medium ml-2">({data.repos.length})</span>
           </h1>
           <p className="text-slate-500 mt-2 text-lg">Browse and analyze all public repositories.</p>
         </div>
