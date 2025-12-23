@@ -71,7 +71,7 @@ const RepoDetailPage = () => {
         </div>
 
         {/* AI Report Section */}
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-indigo-100 relative overflow-hidden">
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-indigo-100 relative  text-black overflow-hidden">
           <div className="absolute top-0 right-0 p-4 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest">
             AI AUDIT REPORT
           </div>

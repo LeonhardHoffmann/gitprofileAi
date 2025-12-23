@@ -8,7 +8,7 @@ export async function POST(req) {
     const { repoDetails, username } = await req.json();
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite-preview-09-2025" });
-+++++
+
     const prompt = `
       You are a Senior Open Source Maintainer and Career Mentor. 
       Analyze this specific GitHub repository brutally honestly.
