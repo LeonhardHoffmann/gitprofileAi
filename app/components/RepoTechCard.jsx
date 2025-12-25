@@ -13,7 +13,7 @@ export default function RepoTechCard({ repo }) {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
       <div>
         <h3 className="text-lg font-semibold">{repo.name}</h3>
         {repo.description && (
@@ -21,23 +21,17 @@ export default function RepoTechCard({ repo }) {
         )}
       </div>
 
-    <div className="space-y-2">
-  {repo.tech.slice(0, 5).map((t, index) => (
-    <div key={`${t.name}-${index}`}>
-      <div className="flex justify-between text-sm">
-        <span>{t.name}</span>
-        <span>{t.percent}%</span>
+      {/* ✅ Tech stack list */}
+      <div className="flex flex-wrap gap-2">
+        {repo.tech.slice(0, 8).map((tech, index) => (
+          <span
+            key={`${tech}-${index}`}
+            className="px-3 py-1 text-sm rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+          >
+            {tech}
+          </span>
+        ))}
       </div>
-      <div className="h-2 bg-gray-800 rounded-full">
-        <div
-          className="h-2 rounded-full bg-indigo-500"
-          style={{ width: `${t.percent}%` }}
-        />
-      </div>
-    </div>
-  ))}
-</div>
-
     </div>
   );
 }

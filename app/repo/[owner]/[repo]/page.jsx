@@ -14,7 +14,6 @@ import {
   Legend,
 } from "chart.js";
 import RepoTechCard from "@/app/components/RepoTechCard";
-import { fetchRepoWiseTech } from "@/app/lib/githubTechStack";
 
 ChartJS.register(
   RadialLinearScale,
@@ -33,65 +32,68 @@ const RepoDetailPage = () => {
   const [scores, setScores] = useState(null);
   const [sections, setSections] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  
 useEffect(() => {
   const loadRepoData = async () => {
-    const saved = localStorage.getItem("githubData");
-    if (!saved) {
-      router.push("/");
-      return;
-    }
-
-    const parsed = JSON.parse(saved);
-
-    const repo = parsed.repos.find(
-      (r) => r.name === params.repo
-    );
-
-    if (!repo) {
-      router.push("/projects");
-      return;
-    }
-
-    // 🔽 CALL API (NOT lib function)
-    const res = await fetch("/api/repo-tech", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: parsed.profile.username,
-      }),
-    });
-
-    const json = await res.json();
-
-    // ✅ SAFE GUARD HERE 👇 (THIS IS THE PART YOU ASKED)
-    const repos = Array.isArray(json.repos) ? json.repos : [];
-
-    const currentRepoTech = repos.find(
-      (r) => r.name === repo.name
-    );
-
-    // ✅ SET FINAL REPO DATA
-    setRepoData({
-      ...repo,
-      tech: currentRepoTech?.tech || [],
-    });
-
-    // ---------- AI CACHE ----------
-    const cacheKey = `analysis-${repo.name}`;
-    const cached = localStorage.getItem(cacheKey);
-
-    if (cached) {
-      const data = JSON.parse(cached);
-      if (data?.scores && data?.sections?.verdict) {
-        setScores(data.scores);
-        setSections(data.sections);
-        setLoading(false);
+    try {
+      const saved = localStorage.getItem("githubData");
+      if (!saved) {
+        router.push("/");
         return;
       }
-    }
 
-    fetchAI(repo);
+      const parsed = JSON.parse(saved);
+
+      // ✅ SAFE REPOS ARRAY
+      const allRepos = Array.isArray(parsed?.repos)
+        ? parsed.repos
+        : [];
+
+      const repo = allRepos.find(
+        (r) => r.name === params.repo
+      );
+
+      if (!repo) {
+        router.push("/projects");
+        return;
+      }
+
+      // ✅ CALL API
+      const res = await fetch(`/api/repo-tech/${repo.name}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: parsed.profile.username,
+        }),
+      });
+
+      const json = await res.json();
+
+      // ✅ DIRECTLY USE tech (NEW API RESPONSE)
+      setRepoData({
+        ...repo,
+        tech: Array.isArray(json?.tech) ? json.tech : [],
+      });
+
+      // ---------- AI CACHE ----------
+      const cacheKey = `analysis-${repo.name}`;
+      const cached = localStorage.getItem(cacheKey);
+
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data?.scores && data?.sections?.verdict) {
+          setScores(data.scores);
+          setSections(data.sections);
+          setLoading(false);
+          return;
+        }
+      }
+
+      fetchAI(repo);
+    } catch (err) {
+      console.error("Repo detail error:", err);
+      setLoading(false);
+    }
   };
 
   loadRepoData();
