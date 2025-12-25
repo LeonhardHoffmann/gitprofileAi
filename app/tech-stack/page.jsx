@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
- import { normalizeTechStack } from "../lib/normalizeTechStack"; 
+import { normalizeTechStack } from "../lib/normalizeTechStack";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function TechStackPage() {
@@ -35,13 +36,13 @@ export default function TechStackPage() {
   if (loading) return <p className="text-center mt-10">Loading tech stack...</p>;
   if (!stack) return <p className="text-center mt-10">No data found</p>;
 
- 
+  const normalized = normalizeTechStack(stack, 1);
 
-const normalized = normalizeTechStack(stack, 1); // <1% → Others
+  const entries = Object.entries(normalized).sort(
+    (a, b) => b[1] - a[1]
+  );
 
-const entries = Object.entries(normalized).sort(
-  (a, b) => b[1] - a[1]
-);
+  const topTech = entries[0];
 
   const chartData = {
     labels: entries.map(([k]) => k),
@@ -51,80 +52,91 @@ const entries = Object.entries(normalized).sort(
         backgroundColor: entries.map(
           (_, i) => `hsl(${i * 35}, 70%, 60%)`
         ),
-        borderColor: "#fff",
+        borderColor: "#0f172a",
         borderWidth: 2,
       },
     ],
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: "62%",
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          color: "#e5e7eb",
+          boxWidth: 14,
+          padding: 14,
+          font: { size: 13, weight: "600" },
+        },
+      },
+      tooltip: {
+        backgroundColor: "#020617",
+        borderColor: "#6366f1",
+        borderWidth: 1,
+        titleColor: "#fff",
+        bodyColor: "#c7d2fe",
+        padding: 12,
+        displayColors: false,
+        callbacks: {
+          label: (ctx) => ` ${ctx.label}: ${ctx.parsed}%`,
+        },
+      },
+    },
+    animation: {
+      animateRotate: true,
+      duration: 1200,
+    },
+  };
+
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <h1 className="text-4xl font-black mb-10 text-center">
+    <div className="max-w-7xl mx-auto px-6 py-14">
+      <h1 className="text-4xl font-black mb-14 text-center text-white">
         Tech Stack Distribution
       </h1>
 
-      <div className="grid md:grid-cols-1 gap-12 items-center">
-        {/* 🥧 PIE */}
-     <div className="w-full max-w-[760px] mx-auto
-                h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px]">
-  <Pie
-    data={chartData}
-    options={{
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "60%", // 👈 DONUT STYLE
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            color: "#e5e7eb",
-            boxWidth: 15,
-            padding: 14,
-            font: {
-              size: 13,
-              weight: "600",
-            },
-          },
-        },
-        tooltip: {
-          backgroundColor: "#020617",
-          borderColor: "#6366f1",
-          borderWidth: 1,
-          titleColor: "#fff",
-          bodyColor: "#c7d2fe",
-          padding: 12,
-          callbacks: {
-            label: function (context) {
-              const label = context.label || "";
-              const value = context.parsed;
-              return ` ${label}: ${value}%`;
-            },
-          },
-        },
-      },
-      animation: {
-        animateRotate: true,
-        duration: 1200,
-      },
-    }}
-  />
-</div>
+      <div className="grid lg:grid-cols-2 gap-16 items-center">
 
+        {/* 🥧 PIE */}
+        <div className="relative w-full max-w-[760px] mx-auto 
+                        h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px]">
+
+          <Pie data={chartData} options={chartOptions} />
+
+          {/* 🧠 CENTER TEXT */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+            <p className="text-sm uppercase tracking-widest text-gray-400">
+              Primary Stack
+            </p>
+
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white">
+              {topTech[0]}
+            </h2>
+
+            <p className="text-xl sm:text-2xl font-bold text-indigo-400 mt-1">
+              {topTech[1]}%
+            </p>
+          </div>
+        </div>
 
         {/* 📊 TECH LIST */}
-        <div className="max-h-[420px] overflow-y-auto space-y-3 pr-2">
+        <div className="max-h-[520px] overflow-y-auto space-y-3 pr-2">
           {entries.map(([tech, value]) => (
             <div
               key={tech}
-              className="flex justify-between rounded-xl border px-4 py-3 bg-white"
+              className="flex justify-between rounded-xl border 
+                         border-slate-800 px-5 py-3 bg-slate-900/60"
             >
-              <span className="font-semibold text-black">{tech}</span>
-              <span className="text-sm text-gray-500">
+              <span className="font-semibold text-white">{tech}</span>
+              <span className="text-sm text-gray-400">
                 {value}%
               </span>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );
