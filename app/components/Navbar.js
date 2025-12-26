@@ -54,7 +54,7 @@ export default function Navbar() {
 
       {/* Mobile Top Scrollable Navbar */}
       <header className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50 shadow-sm">
-        <nav className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide">
+        <nav className="flex flex-col gap-2 px-4 py-3 overflow-x-auto scrollbar-hide">
           {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
