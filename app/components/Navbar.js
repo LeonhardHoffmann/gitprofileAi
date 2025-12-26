@@ -1,9 +1,9 @@
 "use client";
 
-import { React, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, CodeXml, Folder, Mail, Menu } from "lucide-react";
+import { Home, User, CodeXml, Folder, Mail, Menu, X } from "lucide-react";
 
 const navItems = [
   { name: "Home", icon: <Home size={18} />, path: "/" },
@@ -20,7 +20,7 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64  border-r border-gray-100 text-slate-900 flex-col p-6 z-50">
+      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 border-r border-gray-100 text-slate-900 flex-col p-6 z-50">
         <div className="flex items-center gap-2 mb-10 px-4">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xl">G</span>
@@ -61,41 +61,49 @@ export default function Navbar() {
           })}
         </nav>
       </aside>
-
-      {/* Mobile Top Scrollable Navbar */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-full border border-gray-200 shadow-lg text-background"
-        color="black"
+        className="md:hidden fixed top-5 left-6 z-[60] p-3 bg-white rounded-full border border-gray-200 shadow-lg text-slate-900 transition-transform active:scale-90"
         onClick={() => setBurgerMenuOpen(!burgerMenuOpen)}
       >
-        <Menu size={20} />
+        {burgerMenuOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
-      {burgerMenuOpen ? (
-        <header className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50 shadow-sm">
-          <nav className="flex flex-col gap-2 px-4 py-3 overflow-x-auto scrollbar-hide">
-            {navItems.map((item) => {
-              const isActive = pathname === item.path;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.path}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all ${
-                    isActive
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                      : "bg-gray-50 text-slate-600 hover:bg-gray-100"
-                  }`}
-                >
+      <div 
+        className={`md:hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+          burgerMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setBurgerMenuOpen(false)}
+      />
+      <header 
+        className={`md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50 shadow-2xl transition-all duration-300 ease-in-out transform ${
+          burgerMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+        }`}
+      >
+        <nav className="flex flex-col gap-2 px-6 pt-20 pb-8">
+          {navItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <Link
+                key={item.name}
+                href={item.path}
+                onClick={() => setBurgerMenuOpen(false)}
+                className={`flex items-center gap-4 px-6 py-4 rounded-2xl transition-all ${
+                  isActive
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                    : "bg-gray-50 text-slate-600 active:bg-gray-100"
+                }`}
+              >
+                <span className={isActive ? "text-white" : "text-slate-400"}>
                   {item.icon}
-                  <span className="text-sm font-semibold">{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </header>
-      ) : (
-        <></>
-      )}
+                </span>
+                <span className="text-base font-bold">{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </header>
 
+      {/* Mobile Spacer */}
+      <div className="h-16 md:hidden"></div>
     </>
   );
 }
