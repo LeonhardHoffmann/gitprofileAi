@@ -96,8 +96,6 @@ export default function Navbar() {
         <></>
       )}
 
-      {/* Mobile Spacer (to prevent content from hiding under fixed header) */}
-      <div className="h-16 md:hidden"></div>
     </>
   );
 }
