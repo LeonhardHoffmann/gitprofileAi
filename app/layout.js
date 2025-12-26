@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar.js";
 
 const roboto = Roboto({
+  weight: ['400', '700'],
   subsets: ['latin'],            // 'latin' is standard
   display: 'swap',               // Recommended for performance
 });
