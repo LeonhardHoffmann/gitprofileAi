@@ -189,6 +189,7 @@ export default function TechStackPage() {
           </div>
           <div>
             <div
+              onClick={exportPDF}
               key="exportPDF"
               className="flex justify-between rounded-xl border 
                          border-slate-800 px-5 py-3 bg-indigo-600 cursor-pointer"
