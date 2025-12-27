@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import SearchBar from "./components/SearchBar";
 import ProfileAIAnalysis from "./components/ProfileAIAnalysis.jsx";
 import { exportToPDF } from "./utils/exportToPdf";
+import { Share } from "lucide-react";
 
 const HomePage = () => {
   const [data, setData] = useState(null);
@@ -11,7 +12,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [username, setUsername] = useState("");
+  const [sharing, setSharing] = useState(false);
 
   /* 🔁 Load cached data */
   useEffect(() => {
@@ -157,6 +158,34 @@ const HomePage = () => {
                   <MiniStat label="Repos" value={data.profile.publicRepos} />
                 </div>
               </div>
+              <button onClick={() => setSharing(!sharing)} className="self-start bg-indigo-600 p-2 rounded-xl"><Share /></button>
+              {sharing && (
+                <>
+                  <div
+                    className="fixed inset-0 bg-black/50 z-40"
+                    onClick={() => setSharing(false)}
+                  />
+
+                  <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-slate-800 border border-slate-600 rounded-xl p-6 shadow-2xl z-50">
+                    <div className="flex justify-between items-center mb-4">
+                      <p className="font-semibold text-indigo-300">Share Profile</p>
+                      <button onClick={() => setSharing(false)} className="text-slate-400 hover:text-white">✕</button>
+                    </div>
+
+                    <input
+                      type="text"
+                      readOnly
+                      value={typeof window !== "undefined" ? window.location.href : ""}
+                      className="w-full bg-slate-700 text-slate-200 px-3 py-3 rounded-md border border-slate-600 focus:outline-none focus:border-indigo-500"
+                      onFocus={(e) => e.target.select()}
+                    />
+
+                    <p className="text-xs text-slate-500 mt-3 text-center">
+                      Copy the link above to share this analysis.
+                    </p>
+                  </div>
+                </>
+              )}
             </section>
 
             {/* 📊 ACTIVITY STATS */}
