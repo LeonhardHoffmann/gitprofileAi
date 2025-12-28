@@ -127,7 +127,7 @@ const HomePage = () => {
             </p>
 
             <div className="w-full max-w-md">
-              <SearchBar onSearch={handleSearch}/>
+              <SearchBar onSearch={handleSearch} />
             </div>
 
             {error && (
@@ -169,7 +169,7 @@ const HomePage = () => {
                   <MiniStat label="Repos" value={data.profile.publicRepos} />
                 </div>
               </div>
-              <button onClick={() => setSharing(!sharing)} className="self-start bg-indigo-600 p-2 rounded-xl"><Share /></button>
+              <button aria-label="Share profile" onClick={() => setSharing(!sharing)} className="self-start bg-indigo-600 p-2 rounded-xl"><Share /></button>
               {sharing && (
                 <>
                   <div
