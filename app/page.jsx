@@ -35,7 +35,11 @@ const HomePage = () => {
     } else {
       let storedUser = localStorage.getItem("githubData");
       storedUser = JSON.parse(storedUser);
-      router.push(`?user=${storedUser.profile.username}`, { scroll: false });
+      if (localStorage.getItem("githubData") == undefined || !storedUser) {
+        return;
+      } else {
+        router.push(`?user=${storedUser.profile.username}`, { scroll: false });
+      }
     }
   }, []);
 
