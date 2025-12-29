@@ -32,6 +32,10 @@ const HomePage = () => {
     const userParam = params.get('user');
     if (userParam) {
       fetchGithubData(userParam);
+    } else {
+      let storedUser = localStorage.getItem("githubData");
+      storedUser = JSON.parse(storedUser);
+      router.push(`?user=${storedUser.profile.username}`, { scroll: false });
     }
   }, []);
 
